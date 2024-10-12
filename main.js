@@ -5,7 +5,7 @@
  *      id: <int>
  *      task: <string>
  *      timestamp: <string>
- *      isCompleted: <boolean>
+ *      isComplete: <boolean>
  *    }
  * ]
  */
@@ -17,9 +17,9 @@ function generateId() {
   return +new Date();
 }
 
-function generateTodoObject(id, title, author,year, isCompleted) {
+function generateTodoObject(id, title, author,year, isComplete) {
   return {
-    id, title, author,year, isCompleted
+    id, title, author,year, isComplete
   }
 }
 
@@ -45,13 +45,16 @@ function makeBook(bookObject) {
   const {id, title, author,year, isCompleted} = bookObject;
 
   const textTitle = document.createElement('h3');
-  textTitle.innerText = title;
+  textTitle.innerText=title;
+  textTitle.setAttribute("data-testid", "bookItemTitle");
 
   const textAuthor = document.createElement('p');
-  textAuthor.innerText = author;
+  textAuthor.innerText=author;
+  textTitle.setAttribute("data-testid", "bookItemAuthor");
 
   const textYear = document.createElement('p');
-  textYear.innerText = year;
+  textYear.innerText=year;
+  textTitle.setAttribute("data-testid", "bookItemYear");
 
   const textContainer = document.createElement('div');
   textContainer.classList.add('inner');
@@ -60,48 +63,60 @@ function makeBook(bookObject) {
   const container = document.createElement('div');
   container.classList.add('item', 'shadow');
   container.append(textContainer);
-  container.setAttribute("data-tesid",id);
+  container.setAttribute("data-bookid","bookItem");
 
   if (isCompleted) {
     const checkButton = document.createElement('button');
-    checkButton.classList.add('btnComplete');
+    checkButton.classList.add("btnComplete");
+    checkButton.setAttribute("data-testid", "bookItemIsCompleteButton");
     checkButton.addEventListener('click', function () {
-      addTaskToCompleted(id);
+      checkButton.setAttribute("data-testid","bookItem");
+      undoTaskFromCompleted(id);
     });
 
     const undoButton = document.createElement('button');
-    undoButton.classList.add('btnEdit');
+    undoButton.classList.add("btnEdit");
+    undoButton.setAttribute("data-testid", "bookItemEditButton");
     undoButton.addEventListener('click', function () {
+      undoButton.setAttribute("data-testid","bookItem");
       editTask(id);
     });
 
     const trashButton = document.createElement('button');
     trashButton.classList.add('btnDelete');
+    trashButton.setAttribute("data-testid","bookItemDeleteButton")
     trashButton.addEventListener('click', function () {
+      trashButton.setAttribute("data-testid","bookItem");
       removeTaskFromCompleted(id);
     });
+
 
     container.append(checkButton,undoButton, trashButton);
 
   } else {
     const checkButton = document.createElement('button');
-    checkButton.classList.add('btnComplete');
+    checkButton.classList.add("btnComplete");
+    checkButton.setAttribute("data-testid", "bookItemIsCompleteButton");
     checkButton.addEventListener('click', function () {
-      addTaskToCompleted(id);
+      checkButton.setAttribute("data-testid","bookItem");
+      undoTaskFromCompleted(id);
     });
 
     const undoButton = document.createElement('button');
-    undoButton.classList.add('btnEdit');
+    undoButton.classList.add("btnEdit");
+    undoButton.setAttribute("data-testid", "bookItemEditButton");
     undoButton.addEventListener('click', function () {
+      undoButton.setAttribute("data-testid","bookItem");
       editTask(id);
     });
 
     const trashButton = document.createElement('button');
     trashButton.classList.add('btnDelete');
+    trashButton.setAttribute("data-testid","bookItemDeleteButton")
     trashButton.addEventListener('click', function () {
+      trashButton.setAttribute("data-testid","bookItem");
       removeTaskFromCompleted(id);
     });
-
     container.append(checkButton,undoButton, trashButton);
   }
 
@@ -134,9 +149,9 @@ function saveData(){
 function addBook() {
   const textTitle = document.getElementById('bookFormTitle').value;
   const textAuthor = document.getElementById('bookFormAuthor').value;
-  const textYear = document.getElementById('bookFormYear').value;
+  const textYear = parseInt(document.getElementById('bookFormYear').value, 10);
   const isComplete = document.getElementById('bookFormIsComplete').checked;
-
+  
   const generatedID = generateId();
   const bookObject = generateTodoObject(generatedID, textTitle, textAuthor,textYear, isComplete);
   books.push(bookObject);
@@ -158,7 +173,7 @@ function undoTaskFromCompleted(bookId) {
   const bookTarget = findBook(bookId);
   if (bookTarget == null) return;
 
-  bookTarget.isCompleted = !bookTarget.isCompleted; // Toggle completion state
+ bookTarget.isCompleted = !bookTarget.isCompleted; // Toggle completion state
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
 }
@@ -193,13 +208,14 @@ function editTask(bookId) {
 function loadDataFromStorage() {
   const serializedData = localStorage.getItem(STORAGE_KEY);
   let data = JSON.parse(serializedData);
- 
+  
   if (data !== null) {
     for (const book of data) {
+      book.isCompleted = book.isCompleted; // Set isCompleted based on data
       books.push(book);
     }
   }
- 
+  
   document.dispatchEvent(new Event(RENDER_EVENT));
 }
 
